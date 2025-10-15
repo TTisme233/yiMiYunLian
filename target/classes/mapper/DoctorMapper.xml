@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimi.server.mapper.DoctorMapper">
+    <insert id="insert">
+        insert into patient(name, age, gender, status, diagnosis, last_update) VALUES (
+        #{name}, #{age}, #{gender}, #{status}, #{diagnosis}, #{lastUpdate}
+        )
+    </insert>
+    <select id="list" resultType="com.yimi.pojo.entity.PatientPersonalInformation">
+        select * from patient
+        <where>
+            <if test="name != null">and name = #{name}</if>
+            <if test="age != null">and age = #{age}</if>
+            <if test="gender != null">and gender = #{gender}</if>
+            <if test="status != null">and status = #{status}</if>
+            <if test="diagnosis != null">and diagnosis = #{diagnosis}</if>
+            <if test="last_update != null">and last_update = #{lastUpdate}</if>
+        </where>
+    </select>
+</mapper>
