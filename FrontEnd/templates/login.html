@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <script src="../js/login.js"></script>
+    <title>TMDD-登录入口</title>
+    <link rel="stylesheet" href="../css/login.css">
+    <style>
+    /* loading-spinner.css */
+    .spinner {
+        display: none;
+        width: 30px;
+        height: 30px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #90EE90;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+    }
+
+    .spinner.show {
+        display: block;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <!-- 注册 -->
+            <div class="register-box hidden">
+                <h1>register</h1>
+                <input type="text" id="rusername" placeholder="用户名">
+                <input type="register-code" id="invite" placeholder="医保账号或医疗团队邀请码">
+                <input type="password" id="rpassword" placeholder="密码">
+                <input type="password" id="rcpassword" placeholder="确认密码">
+                <button onclick="registerdata()">注册</button>
+            </div>
+            <!-- 登录 -->
+            <div class="login-box">
+                <h1>login</h1>
+                <input type="text" id="username" placeholder="用户名">
+                <input type="password" id="password" placeholder="密码"><br>
+                <canvas id="canvas" onclick="refresh()" width="120" height="40"></canvas>
+                <input type="text" id="verifycode" placeholder="验证码">
+                <button onclick="logindata()" id="login-btn">登录</button>
+                <div id="loading-spinner" class="spinner hidden"></div>
+            </div>
+        </div>
+        <div class="con-box left">
+            <h2>欢迎使用</h2>
+            <h2><span>Medicloud</span></h2>
+             <h2>医疗平台</h2>
+             <br>
+            <p>已有账号</p>
+            <button id="login">去登录</button>
+        </div>
+        <div class="con-box right">
+           <h2>欢迎使用</h2>
+            <h2><span>Medicloud</span></h2>
+             <h2>医疗平台</h2>
+             <br>
+            <p> 没有账号?</p>
+            <button id="register">去注册</button>
+        </div>
+    </div>
+</body>
+<script>
+    let login=document.getElementById('login');
+    let register=document.getElementById('register');
+    let form_box=document.getElementsByClassName('form-box')[0];
+    let register_box=document.getElementsByClassName('register-box')[0];
+    let login_box=document.getElementsByClassName('login-box')[0];
+    let canvas = document.getElementById("canvas");//演员
+    let verify_input = document.getElementById("verifycode")
+    let context = canvas.getContext("2d");
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const loginBtn = document.getElementById('login-btn');
+
+    // 去注册按钮点击事件
+    register.addEventListener('click',()=>{
+        form_box.style.transform='translateX(80%)';
+        login_box.classList.add('hidden');
+        register_box.classList.remove('hidden');
+    })
+    // 去登录按钮点击事件
+    login.addEventListener('click',()=>{
+        form_box.style.transform='translateX(0%)';
+        register_box.classList.add('hidden');
+        login_box.classList.remove('hidden');
+    })
+    // 为登录按钮添加点击事件监听器
+    loginBtn.addEventListener('click', () => {
+        loginBtn.style.display = 'none';
+        loadingSpinner.classList.remove('hidden');
+        loadingSpinner.classList.add('show');
+
+        // 使用 setTimeout 模拟 3 秒的异步请求
+        setTimeout(() => {
+            // 登录成功后，隐藏加载动画
+            loadingSpinner.classList.remove('show');
+            loadingSpinner.classList.add('hidden');
+
+            // 显示登录按钮
+            loginBtn.style.display = 'block';
+
+            window.location.href = './manager.html'; // 请替换为你想要跳转的目标页面
+        }, 1500);
+    });
+    let verifycode = draw();
+</script>
+</html>

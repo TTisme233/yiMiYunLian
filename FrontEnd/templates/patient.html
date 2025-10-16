@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医密云联 - 患者个人中心</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1e95d4;
+            --secondary: #0d47a1;
+            --accent: #00bcd4;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f5f9fc;
+            --dark: #263238;
+            --card-bg: #ffffff;
+            --sidebar-bg: #7dd1df;
+            --sidebar-hover: #b5e5e7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* 顶部导航 */
+        .top-nav {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            height: 70px;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-details .role {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: #333;
+            padding-top: 20px;
+            overflow-y: auto;
+            z-index: 900;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: var(--sidebar-hover);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .nav-item i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            color: var(--primary);
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-top: 70px;
+            margin-left: 260px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e6ed;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .page-title i {
+            margin-right: 15px;
+            color: var(--primary);
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            padding: 20px 25px;
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            border-bottom: 1px solid #e0e6ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* 表格样式 */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid #e0e6ed;
+        }
+        
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .table tr:hover td {
+            background-color: #f5f9ff;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        /* 加密指示器 */
+        .encryption-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #e3f2fd;
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .encryption-badge i {
+            margin-right: 6px;
+        }
+        
+        /* 状态标签 */
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-normal {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+        
+        .status-warning {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+        
+        .status-danger {
+            background: #ffebee;
+            color: var(--danger);
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            height: 300px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+                font-size: 1.5rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 20px;
+        }
+        
+        /* 健康指标卡片 */
+        .health-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .indicator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            border-left: 5px solid var(--primary);
+        }
+        
+        .indicator-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+            background: #e3f2fd;
+            color: var(--primary);
+        }
+        
+        .indicator-content {
+            flex-grow: 1;
+        }
+        
+        .indicator-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+        
+        .indicator-title {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        /* 数据项样式 */
+        .data-item {
+            display: flex;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .data-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .data-content {
+            flex-grow: 1;
+        }
+        
+        .data-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .data-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* 用药记录 */
+        .medication-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e0e6ed;
+        }
+        
+        .medication-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .medication-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .medication-details {
+            flex-grow: 1;
+        }
+        
+        .medication-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .medication-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* 健康提醒 */
+        .reminder-card {
+            background: #fff8e1;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--warning);
+        }
+        
+        .reminder-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .reminder-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff3c4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--warning);
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        
+        .reminder-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .reminder-content {
+            padding-left: 55px;
+        }
+        
+        /* 健康目标 */
+        .goal-progress {
+            height: 10px;
+            background: #e0e6ed;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 5px;
+        }
+        
+        .goal-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* 页面内容区 */
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e0e6ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-close:hover {
+            color: var(--danger);
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-footer {
+            padding: 15px 25px;
+            border-top: 1px solid #e0e6ed;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 149, 212, 0.2);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-col {
+            flex: 1;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .form-control.error {
+            border-color: var(--danger);
+        }
+        
+        .form-control.error + .error-message {
+            display: block;
+        }
+
+           .export-loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 导出成功提示 */
+        .export-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .export-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .export-toast i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>医密云联</span>
+        </div>
+        <button class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="user-info">
+            <div class="user-avatar">李</div>
+            <div class="user-details">
+                <div>李大明 <small>患者</small></div>
+                <div class="role">ID: HN2023072801</div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="nav-item active" data-target="home-section">
+            <i class="fas fa-home"></i>
+            <span>个人中心</span>
+        </div>
+        <div class="nav-item" data-target="health-section">
+            <i class="fas fa-heartbeat"></i>
+            <span>健康档案</span>
+        </div>
+        <div class="nav-item" data-target="exam-section">
+            <i class="fas fa-file-medical"></i>
+            <span>检查记录</span>
+        </div>
+        <div class="nav-item" data-target="medication-section">
+            <i class="fas fa-pills"></i>
+            <span>用药记录</span>
+        </div>
+    </aside>
+    
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 个人中心页面 -->
+        <div id="home-section" class="page-section active">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-injured"></i>
+                    患者个人中心
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密
+                </div>
+            </div>
+            
+            <!-- 患者基本信息 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">个人信息</h2>
+                    <button class="btn btn-outline" id="edit-info-btn">
+                        <i class="fas fa-edit"></i> 编辑信息
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="health-indicators">
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-birthday-cake"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value" id="age-value">58岁</div>
+                                <div class="indicator-title">年龄</div>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-venus-mars"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value" id="gender-value">男</div>
+                                <div class="indicator-title">性别</div>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-weight"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value" id="weight-value">75kg</div>
+                                <div class="indicator-title">体重</div>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-ruler"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value" id="height-value">172cm</div>
+                                <div class="indicator-title">身高</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 150px; font-weight: 600;">病历号</td>
+                                    <td id="medical-record-value">HN2023072801</td>
+                                    <td style="width: 150px; font-weight: 600;">血型</td>
+                                    <td id="blood-type-value">O型</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600;">联系方式</td>
+                                    <td id="contact-value">138****5678</td>
+                                    <td style="font-weight: 600;">紧急联系人</td>
+                                    <td id="emergency-contact-value">张小红 (配偶) 139****1234</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600;">主治医师</td>
+                                    <td id="doctor-value">王雪梅 主任 (心血管内科)</td>
+                                    <td style="font-weight: 600;">最后就诊</td>
+                                    <td id="last-visit-value">2023-11-15</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600;">过敏史</td>
+                                    <td id="allergy-value">青霉素过敏</td>
+                                    <td style="font-weight: 600;">慢性病史</td>
+                                    <td id="chronic-disease-value">高血压、冠心病</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 健康指标图表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">健康指标趋势</h2>
+                    <div>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-calendar"></i> 最近30天
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="healthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 健康提醒 -->
+            <div class="reminder-card">
+                <div class="reminder-header">
+                    <div class="reminder-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="reminder-title">健康提醒</div>
+                </div>
+                <div class="reminder-content">
+                    <p>您的下一次心脏彩超复查预约在 <strong>2023-12-15 上午10:00</strong>，请提前做好准备。</p>
+                    <p>根据最近检查结果，建议您每日钠盐摄入量控制在5克以内。</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 健康档案页面 -->
+        <div id="health-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-heartbeat"></i>
+                    健康档案
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">健康档案概览</h2>
+                    <button class="btn btn-outline" id="export-health-record">
+                        <div class="export-loader" id="export-loader"></div>
+                        <i class="fas fa-download"></i> 导出档案
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="health-indicators">
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value">45%</div>
+                                <div class="indicator-title">EF值</div>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value">5.9</div>
+                                <div class="indicator-title">总胆固醇</div>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-syringe"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value">6.8</div>
+                                <div class="indicator-title">空腹血糖</div>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="indicator-icon">
+                                <i class="fas fa-weight"></i>
+                            </div>
+                            <div class="indicator-content">
+                                <div class="indicator-value">75kg</div>
+                                <div class="indicator-title">体重</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">健康历史记录</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>日期</th>
+                                            <th>类型</th>
+                                            <th>结果</th>
+                                            <th>状态</th>
+                                            <th>医生</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2023-11-15</td>
+                                            <td>心脏彩超</td>
+                                            <td>EF值：45%</td>
+                                            <td><span class="status-badge status-warning">偏低</span></td>
+                                            <td>王雪梅</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2023-11-14</td>
+                                            <td>血液生化</td>
+                                            <td>总胆固醇：5.9</td>
+                                            <td><span class="status-badge status-warning">偏高</span></td>
+                                            <td>张明</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2023-10-20</td>
+                                            <td>胸部CT</td>
+                                            <td>未见明显异常</td>
+                                            <td><span class="status-badge status-normal">正常</span></td>
+                                            <td>李建国</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2023-09-10</td>
+                                            <td>心电图</td>
+                                            <td>ST段改变</td>
+                                            <td><span class="status-badge status-warning">异常</span></td>
+                                            <td>王雪梅</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 检查记录页面 -->
+        <div id="exam-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-file-medical"></i>
+                    检查记录
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">检查记录列表</h2>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-history"></i> 查看历史记录
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="data-item">
+                        <div class="data-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="data-content">
+                            <div class="data-title">心脏彩超检查 (2023-11-15)</div>
+                            <div class="data-meta">检查医生：王雪梅主任 | 科室：心血管内科</div>
+                            <div style="margin-top: 10px;">
+                                <p><strong>检查结果：</strong>EF值：45% <span class="status-badge status-warning">偏低</span> | 左室舒张末径：58mm</p>
+                                <p><strong>医生建议：</strong>建议限制钠盐摄入，定期复查心功能，避免剧烈运动。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-item">
+                        <div class="data-icon">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <div class="data-content">
+                            <div class="data-title">血液生化检查 (2023-11-14)</div>
+                            <div class="data-meta">检查医生：张明医生 | 科室：检验科</div>
+                            <div style="margin-top: 10px;">
+                                <p><strong>检查结果：</strong>空腹血糖：6.8 mmol/L | 总胆固醇：5.9 mmol/L <span class="status-badge status-warning">偏高</span></p>
+                                <p><strong>医生建议：</strong>建议低脂饮食，增加运动量，3个月后复查血脂。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-item">
+                        <div class="data-icon">
+                            <i class="fas fa-lungs"></i>
+                        </div>
+                        <div class="data-content">
+                            <div class="data-title">胸部CT检查 (2023-10-20)</div>
+                            <div class="data-meta">检查医生：李建国主任 | 科室：影像科</div>
+                            <div style="margin-top: 10px;">
+                                <p><strong>检查结果：</strong>双肺纹理清晰，未见明显异常密度影。</p>
+                                <p><strong>医生建议：</strong>结果正常，建议每年定期体检。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 用药记录页面 -->
+        <div id="medication-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-pills"></i>
+                    用药记录
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">当前用药记录</h2>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-history"></i> 用药历史
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="medication-item">
+                        <div class="medication-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="medication-details">
+                            <div class="medication-name">阿托伐他汀钙片 (立普妥)</div>
+                            <div class="medication-info">
+                                <p>剂量：20mg/次 | 频次：每日1次（睡前）</p>
+                                <p>用途：降血脂 | 开方医生：王雪梅</p>
+                                <p>开始日期：2023-09-10 | 剩余天数：15天</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="medication-item">
+                        <div class="medication-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="medication-details">
+                            <div class="medication-name">琥珀酸美托洛尔缓释片 (倍他乐克)</div>
+                            <div class="medication-info">
+                                <p>剂量：47.5mg/次 | 频次：每日1次（早晨）</p>
+                                <p>用途：控制心率、降压 | 开方医生：王雪梅</p>
+                                <p>开始日期：2023-10-05 | 剩余天数：8天</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="medication-item">
+                        <div class="medication-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="medication-details">
+                            <div class="medication-name">阿司匹林肠溶片</div>
+                            <div class="medication-info">
+                                <p>剂量：100mg/次 | 频次：每日1次（餐后）</p>
+                                <p>用途：抗血小板聚集 | 开方医生：王雪梅</p>
+                                <p>开始日期：2023-08-15 | 长期服用</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    <!-- 个人信息编辑模态框 -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">编辑个人信息</h2>
+                <button class="modal-close" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-form">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="age">年龄</label>
+                                <input type="number" class="form-control" id="age" name="age" min="0" max="150" required>
+                                <div class="error-message">请输入有效的年龄</div>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="gender">性别</label>
+                                <select class="form-control" id="gender" name="gender" required>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                                <div class="error-message">请选择性别</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="weight">体重 (kg)</label>
+                                <input type="number" class="form-control" id="weight" name="weight" min="0" max="300" step="0.1" required>
+                                <div class="error-message">请输入有效的体重</div>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="height">身高 (cm)</label>
+                                <input type="number" class="form-control" id="height" name="height" min="0" max="250" step="0.1" required>
+                                <div class="error-message">请输入有效的身高</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="blood-type">血型</label>
+                                <select class="form-control" id="blood-type" name="blood-type" required>
+                                    <option value="A型">A型</option>
+                                    <option value="B型">B型</option>
+                                    <option value="AB型">AB型</option>
+                                    <option value="O型">O型</option>
+                                </select>
+                                <div class="error-message">请选择血型</div>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="contact">联系方式</label>
+                                <input type="tel" class="form-control" id="contact" name="contact" required>
+                                <div class="error-message">请输入有效的联系方式</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="emergency-contact">紧急联系人</label>
+                        <input type="text" class="form-control" id="emergency-contact" name="emergency-contact" required>
+                        <div class="error-message">请输入紧急联系人信息</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="allergy">过敏史</label>
+                        <textarea class="form-control" id="allergy" name="allergy" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="chronic-disease">慢性病史</label>
+                        <textarea class="form-control" id="chronic-disease" name="chronic-disease" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancel-btn">取消</button>
+                <button class="btn btn-primary" id="save-btn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="export-toast" id="export-toast">
+        <i class="fas fa-check-circle"></i>
+        <span>健康档案导出成功！</span>
+    </div>
+    
+    <script>
+        // 图表初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 健康指标图表
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            const healthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['11月1日', '11月5日', '11月10日', '11月15日', '11月20日', '11月25日', '11月30日'],
+                    datasets: [{
+                        label: '收缩压 (mmHg)',
+                        data: [145, 142, 138, 135, 140, 138, 136],
+                        borderColor: '#EB5757',
+                        backgroundColor: 'rgba(235, 87, 87, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '舒张压 (mmHg)',
+                        data: [90, 88, 85, 82, 86, 84, 83],
+                        borderColor: '#2D9CDB',
+                        backgroundColor: 'rgba(45, 156, 219, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '空腹血糖 (mmol/L)',
+                        data: [6.9, 6.8, 6.7, 6.8, 6.6, 6.5, 6.4],
+                        borderColor: '#27AE60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '最近30天健康指标变化',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 移动端菜单切换
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+            
+            // 侧边栏菜单点击事件
+            const navItems = document.querySelectorAll('.nav-item');
+            const pageSections = document.querySelectorAll('.page-section');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 移除所有菜单项的active类
+                    navItems.forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // 添加当前菜单项的active类
+                    this.classList.add('active');
+                    
+                    // 获取目标页面ID
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // 隐藏所有页面
+                    pageSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // 显示目标页面
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+            
+            // 个人信息编辑功能
+            const editInfoBtn = document.getElementById('edit-info-btn');
+            const editModal = document.getElementById('edit-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const editForm = document.getElementById('edit-form');
+            
+            // 打开模态框
+            editInfoBtn.addEventListener('click', function() {
+                // 填充表单数据
+                document.getElementById('age').value = parseInt(document.getElementById('age-value').innerText);
+                document.getElementById('gender').value = document.getElementById('gender-value').innerText;
+                document.getElementById('weight').value = parseFloat(document.getElementById('weight-value').innerText);
+                document.getElementById('height').value = parseFloat(document.getElementById('height-value').innerText);
+                document.getElementById('blood-type').value = document.getElementById('blood-type-value').innerText;
+                document.getElementById('contact').value = document.getElementById('contact-value').innerText;
+                document.getElementById('emergency-contact').value = document.getElementById('emergency-contact-value').innerText;
+                document.getElementById('allergy').value = document.getElementById('allergy-value').innerText;
+                document.getElementById('chronic-disease').value = document.getElementById('chronic-disease-value').innerText;
+                
+                // 显示模态框
+                editModal.classList.add('active');
+            });
+            
+            // 关闭模态框
+            function closeModal() {
+                editModal.classList.remove('active');
+                // 清除验证错误
+                const errorInputs = editForm.querySelectorAll('.form-control.error');
+                errorInputs.forEach(input => {
+                    input.classList.remove('error');
+                });
+            }
+            
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // 点击模态框外部关闭
+            editModal.addEventListener('click', function(e) {
+                if (e.target === editModal) {
+                    closeModal();
+                }
+            });
+            
+            // 表单验证
+            function validateForm() {
+                let isValid = true;
+                const requiredInputs = editForm.querySelectorAll('[required]');
+                
+                requiredInputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        input.classList.add('error');
+                        isValid = false;
+                    } else {
+                        input.classList.remove('error');
+                    }
+                });
+                
+                // 特殊验证：年龄
+                const ageInput = document.getElementById('age');
+                if (ageInput.value < 0 || ageInput.value > 150) {
+                    ageInput.classList.add('error');
+                    isValid = false;
+                }
+                
+                // 特殊验证：体重
+                const weightInput = document.getElementById('weight');
+                if (weightInput.value < 0 || weightInput.value > 300) {
+                    weightInput.classList.add('error');
+                    isValid = false;
+                }
+                
+                // 特殊验证：身高
+                const heightInput = document.getElementById('height');
+                if (heightInput.value < 0 || heightInput.value > 250) {
+                    heightInput.classList.add('error');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            // 保存表单数据
+            saveBtn.addEventListener('click', function() {
+                if (validateForm()) {
+                    // 更新页面数据
+                    document.getElementById('age-value').innerText = document.getElementById('age').value + '岁';
+                    document.getElementById('gender-value').innerText = document.getElementById('gender').value;
+                    document.getElementById('weight-value').innerText = document.getElementById('weight').value + 'kg';
+                    document.getElementById('height-value').innerText = document.getElementById('height').value + 'cm';
+                    document.getElementById('blood-type-value').innerText = document.getElementById('blood-type').value;
+                    document.getElementById('contact-value').innerText = document.getElementById('contact').value;
+                    document.getElementById('emergency-contact-value').innerText = document.getElementById('emergency-contact').value;
+                    document.getElementById('allergy-value').innerText = document.getElementById('allergy').value;
+                    document.getElementById('chronic-disease-value').innerText = document.getElementById('chronic-disease').value;
+                    
+                    // 关闭模态框
+                    closeModal();
+                    
+                    // 显示成功消息（在实际应用中，这里可以添加与后端API的交互）
+                    alert('个人信息更新成功！');
+                }
+            });
+
+                        const exportBtn = document.getElementById('export-health-record');
+            const exportLoader = document.getElementById('export-loader');
+            const exportToast = document.getElementById('export-toast');
+            
+            exportBtn.addEventListener('click', function() {
+                // 显示加载动画
+                exportLoader.style.display = 'block';
+                
+                // 模拟导出过程（实际应用中这里会是API调用）
+                setTimeout(() => {
+                    // 生成PDF
+                    generateHealthRecordPDF();
+                    
+                    // 隐藏加载动画
+                    exportLoader.style.display = 'none';
+                    
+                    // 显示成功提示
+                    exportToast.classList.add('show');
+                    
+                    // 3秒后隐藏提示
+                    setTimeout(() => {
+                        exportToast.classList.remove('show');
+                    }, 3000);
+                }, 1500);
+            });
+            
+            // 生成健康档案PDF函数
+            function generateHealthRecordPDF() {
+                // 使用jsPDF生成PDF文档
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // 添加标题
+                doc.setFontSize(20);
+                doc.setTextColor(30, 149, 212);
+                doc.text('医密云联 - 健康档案', 105, 20, { align: 'center' });
+                
+                // 添加患者基本信息
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`患者姓名: 李大明`, 20, 35);
+                doc.text(`病历号: HN2023072801`, 20, 45);
+                doc.text(`年龄: 58岁`, 20, 55);
+                doc.text(`性别: 男`, 100, 55);
+                doc.text(`身高: 172cm`, 20, 65);
+                doc.text(`体重: 75kg`, 100, 65);
+                doc.text(`血型: O型`, 20, 75);
+                doc.text(`联系方式: 138****5678`, 100, 75);
+                
+                // 添加分隔线
+                doc.line(20, 85, 190, 85);
+                
+                // 添加健康指标
+                doc.setFontSize(14);
+                doc.setTextColor(30, 149, 212);
+                doc.text('健康指标', 20, 95);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`EF值: 45% (偏低)`, 20, 105);
+                doc.text(`总胆固醇: 5.9 (偏高)`, 20, 115);
+                doc.text(`空腹血糖: 6.8`, 20, 125);
+                
+                // 添加检查记录标题
+                doc.setFontSize(14);
+                doc.setTextColor(30, 149, 212);
+                doc.text('检查记录', 20, 140);
+                
+                // 添加检查记录表格
+                doc.autoTable({
+                    startY: 145,
+                    head: [['日期', '类型', '结果', '状态']],
+                    body: [
+                        ['2023-11-15', '心脏彩超', 'EF值：45%', '偏低'],
+                        ['2023-11-14', '血液生化', '总胆固醇：5.9', '偏高'],
+                        ['2023-10-20', '胸部CT', '未见明显异常', '正常'],
+                        ['2023-09-10', '心电图', 'ST段改变', '异常']
+                    ],
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [30, 149, 212]
+                    }
+                });
+                
+                // 添加用药记录标题
+                doc.setFontSize(14);
+                doc.setTextColor(30, 149, 212);
+                doc.text('用药记录', 20, doc.autoTable.previous.finalY + 15);
+                
+                // 添加用药记录表格
+                doc.autoTable({
+                    startY: doc.autoTable.previous.finalY + 20,
+                    head: [['药品名称', '剂量', '频次', '用途', '开始日期']],
+                    body: [
+                        ['阿托伐他汀钙片 (立普妥)', '20mg/次', '每日1次（睡前）', '降血脂', '2023-09-10'],
+                        ['琥珀酸美托洛尔缓释片 (倍他乐克)', '47.5mg/次', '每日1次（早晨）', '控制心率、降压', '2023-10-05'],
+                        ['阿司匹林肠溶片', '100mg/次', '每日1次（餐后）', '抗血小板聚集', '2023-08-15']
+                    ],
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [30, 149, 212]
+                    }
+                });
+                
+                // 添加页脚
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`生成时间: ${new Date().toLocaleString()}`, 20, doc.internal.pageSize.height - 10);
+                    doc.text(`页码: ${i}/${pageCount}`, 190, doc.internal.pageSize.height - 10, { align: 'right' });
+                }
+                
+                // 保存PDF
+                doc.save(`健康档案_李大明_HN2023072801_${new Date().toISOString().slice(0,10)}.pdf`);
+            }
+        });
+    </script>
+</body>
+</html>

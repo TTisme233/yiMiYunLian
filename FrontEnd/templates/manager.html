@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医密云联 - 系统管理员控制台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #0d47a1;
+            --secondary: #1a237e;
+            --accent: #2962ff;
+            --success: #00c853;
+            --warning: #ffab00;
+            --danger: #d50000;
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-text: #e0e0e0;
+            --dark-border: #333333;
+            --dark-hover: #2a2a2a;
+            --sidebar-bg: #0d1b36;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航 */
+        .top-nav {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            height: 70px;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2962ff, #0039cb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-details .role {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: #bbdefb;
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: #bbdefb;
+            padding-top: 20px;
+            overflow-y: auto;
+            z-index: 900;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(41, 98, 255, 0.15);
+            border-left: 4px solid var(--accent);
+            color: white;
+        }
+        
+        .nav-item i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-top: 70px;
+            margin-left: 260px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+        
+        .page-title i {
+            margin-right: 15px;
+            color: var(--accent);
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: var(--dark-card);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        
+        .card-header {
+            padding: 20px 25px;
+            background: rgba(13, 27, 54, 0.7);
+            border-bottom: 1px solid var(--dark-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* 表格样式 */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background-color: rgba(13, 27, 54, 0.5);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #bbdefb;
+            border-bottom: 2px solid var(--dark-border);
+        }
+        
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .table tr:hover td {
+            background-color: rgba(41, 98, 255, 0.1);
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--accent), #0039cb);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(to right, var(--success), #009624);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* 加密指示器 */
+        .encryption-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(41, 98, 255, 0.2);
+            color: var(--accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid rgba(41, 98, 255, 0.3);
+        }
+        
+        .encryption-badge i {
+            margin-right: 6px;
+        }
+        
+        /* 状态标签 */
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: rgba(0, 200, 83, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(0, 200, 83, 0.3);
+        }
+        
+        .status-inactive {
+            background: rgba(213, 0, 0, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(213, 0, 0, 0.3);
+        }
+        
+        .status-pending {
+            background: rgba(255, 171, 0, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(255, 171, 0, 0.3);
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            height: 300px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+                font-size: 1.5rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 20px;
+        }
+        
+        /* 统计卡片 */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--dark-card);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .stat-content {
+            flex-grow: 1;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+        }
+        
+        .stat-title {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .bg-blue {
+            background: linear-gradient(135deg, #1e88e5, #0d47a1);
+            color: white;
+        }
+        
+        .bg-green {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+        }
+        
+        .bg-orange {
+            background: linear-gradient(135deg, #ff9800, #ef6c00);
+            color: white;
+        }
+        
+        .bg-purple {
+            background: linear-gradient(135deg, #9c27b0, #6a1b9a);
+            color: white;
+        }
+        
+        /* 审计日志 */
+        .audit-log {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            padding: 15px;
+            background: rgba(30, 30, 30, 0.5);
+        }
+        
+        .log-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--dark-border);
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(41, 98, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            color: var(--accent);
+        }
+        
+        .log-content {
+            flex-grow: 1;
+        }
+        
+        .log-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: white;
+        }
+        
+        .log-meta {
+            font-size: 0.85rem;
+            color: #bbdefb;
+        }
+        
+        .log-highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .log-danger {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .log-success {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        /* 安全面板 */
+        .security-panel {
+            background: linear-gradient(135deg, rgba(13, 27, 54, 0.7), rgba(30, 30, 30, 0.7));
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .security-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .security-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(41, 98, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .security-title {
+            font-size: 1.5rem;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* 系统状态指示器 */
+        .system-status {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .status-indicator {
+            flex: 1;
+            background: var(--dark-card);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .status-good {
+            color: var(--success);
+        }
+        
+        .status-warning {
+            color: var(--warning);
+        }
+        
+        .status-critical {
+            color: var(--danger);
+        }
+        
+        .status-label {
+            font-size: 0.9rem;
+            color: #bbdefb;
+        }
+        
+        /* 页面内容区 */
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        /* 表单样式 */
+        .admin-form {
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(30, 30, 30, 0.7);
+            border: 1px solid var(--dark-border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            color: var(--dark-text);
+        }
+        
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(41, 98, 255, 0.2);
+            outline: none;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+                /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: var(--dark-card);
+            margin: 70px auto;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            border: 1px solid var(--dark-border);
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            background: rgba(13, 27, 54, 0.7);
+            border-bottom: 1px solid var(--dark-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-footer {
+            padding: 15px 25px;
+            background: rgba(13, 27, 54, 0.3);
+            border-top: 1px solid var(--dark-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: white;
+        }
+        
+        /* 搜索和过滤区域 */
+        .filters-container {
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--dark-border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        /* 操作按钮组 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* 删除按钮样式 */
+        .btn-danger {
+            background: linear-gradient(to right, var(--danger), #9a0007);
+            color: white;
+        }
+        
+        /* 确认删除对话框 */
+        .confirm-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--dark-card);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.6);
+            z-index: 3000;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .confirm-dialog h3 {
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .confirm-dialog p {
+            margin-bottom: 20px;
+            color: #bbdefb;
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>医密云联</span>
+        </div>
+        <button class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="user-info">
+            <div class="user-avatar">管</div>
+            <div class="user-details">
+                <div>系统管理员</div>
+                <div class="role">最高权限 | 平台管理</div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="nav-item active" data-target="dashboard-section">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>控制台概览</span>
+        </div>
+        <div class="nav-item" data-target="doctors-section">
+            <i class="fas fa-user-md"></i>
+            <span>医生管理</span>
+        </div>
+        <div class="nav-item" data-target="departments-section">
+            <i class="fas fa-clinic-medical"></i>
+            <span>科室管理</span>
+        </div>
+        <div class="nav-item" data-target="permissions-section">
+            <i class="fas fa-clipboard-list"></i>
+            <span>权限配置</span>
+        </div>
+        <div class="nav-item" data-target="audit-section">
+            <i class="fas fa-history"></i>
+            <span>审计日志</span>
+        </div>
+        <div class="nav-item" data-target="monitoring-section">
+            <i class="fas fa-chart-line"></i>
+            <span>系统监控</span>
+        </div>
+    </aside>
+    
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 控制台概览页面 -->
+        <div id="dashboard-section" class="page-section active">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-shield"></i>
+                    系统管理员控制台
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    属性基加密 (ABE) 已启用
+                </div>
+            </div>
+            
+            <!-- 统计卡片 -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">86</div>
+                        <div class="stat-title">注册医生</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green">
+                        <i class="fas fa-clinic-medical"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">24</div>
+                        <div class="stat-title">科室部门</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">1,542</div>
+                        <div class="stat-title">注册患者</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">98.7%</div>
+                        <div class="stat-title">加密数据比例</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统状态面板 -->
+            <div class="security-panel">
+                <div class="security-header">
+                    <div class="security-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2 class="security-title">系统安全状态</h2>
+                </div>
+                
+                <div class="system-status">
+                    <div class="status-indicator">
+                        <div class="status-label">加密状态</div>
+                        <div class="status-value status-good">100%</div>
+                        <div>所有数据已加密</div>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <div class="status-label">访问控制</div>
+                        <div class="status-value status-good">正常</div>
+                        <div>权限策略已生效</div>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <div class="status-label">审计日志</div>
+                        <div class="status-value status-good">开启</div>
+                        <div>所有操作已记录</div>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <div class="status-label">威胁检测</div>
+                        <div class="status-value status-good">0</div>
+                        <div>未检测到威胁</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统监控图表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">系统活动监控</h2>
+                    <div>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-calendar"></i> 最近7天
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="systemChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 医生管理页面 -->
+        <div id="doctors-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-md"></i>
+                    医生管理
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密 (ABE技术)
+                </div>
+            </div>
+            
+            <!-- 搜索和过滤区域 -->
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="filter-label">搜索医生</label>
+                    <input type="text" class="form-control" id="doctor-search" placeholder="输入姓名或ID搜索">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">科室筛选</label>
+                    <select class="form-control" id="department-filter">
+                        <option value="">所有科室</option>
+                        <option value="心血管内科">心血管内科</option>
+                        <option value="神经内科">神经内科</option>
+                        <option value="呼吸内科">呼吸内科</option>
+                        <option value="内分泌科">内分泌科</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">状态筛选</label>
+                    <select class="form-control" id="status-filter">
+                        <option value="">所有状态</option>
+                        <option value="active">激活</option>
+                        <option value="inactive">未激活</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="search-doctors">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">医生列表</h2>
+                    <button class="btn btn-primary" id="add-doctor-btn">
+                        <i class="fas fa-plus"></i> 添加新医生
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="doctors-table">
+                            <thead>
+                                <tr>
+                                    <th>医生ID</th>
+                                    <th>姓名</th>
+                                    <th>科室</th>
+                                    <th>职称</th>
+                                    <th>状态</th>
+                                    <th>最后登录</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 科室管理页面 -->
+        <div id="departments-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-clinic-medical"></i>
+                    科室管理
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密 (ABE技术)
+                </div>
+            </div>
+            
+            <!-- 搜索和过滤区域 -->
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="filter-label">搜索科室</label>
+                    <input type="text" class="form-control" id="department-search" placeholder="输入科室名称或ID搜索">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">状态筛选</label>
+                    <select class="form-control" id="dept-status-filter">
+                        <option value="">所有状态</option>
+                        <option value="active">启用</option>
+                        <option value="inactive">停用</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="search-departments">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">科室列表</h2>
+                    <button class="btn btn-primary" id="add-department-btn">
+                        <i class="fas fa-plus"></i> 添加新科室
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="departments-table">
+                            <thead>
+                                <tr>
+                                    <th>科室ID</th>
+                                    <th>科室名称</th>
+                                    <th>负责人</th>
+                                    <th>医生数量</th>
+                                    <th>患者数量</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 权限配置页面 -->
+         <div id="permissions-section" class="page-section">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-clipboard-list"></i>
+            权限配置
+        </h1>
+        <div class="encryption-badge">
+            <i class="fas fa-lock"></i>
+            数据端到端加密 (ABE技术)
+        </div>
+    </div>
+    
+    <!-- 搜索和过滤区域 -->
+    <div class="filters-container">
+        <div class="filter-group">
+            <label class="filter-label">搜索角色</label>
+            <input type="text" class="form-control" id="role-search" placeholder="输入角色名称搜索">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">状态筛选</label>
+            <select class="form-control" id="role-status-filter">
+                <option value="">所有状态</option>
+                <option value="active">激活</option>
+                <option value="inactive">未激活</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" id="search-roles">
+            <i class="fas fa-search"></i> 搜索
+        </button>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">角色管理</h2>
+            <button class="btn btn-primary" id="add-role-btn">
+                <i class="fas fa-plus"></i> 添加新角色
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="roles-table">
+                    <thead>
+                        <tr>
+                            <th>角色ID</th>
+                            <th>角色名称</th>
+                            <th>描述</th>
+                            <th>用户数量</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">权限配置</h2>
+        </div>
+        <div class="card-body">
+            <div class="admin-form">
+                <div class="form-group">
+                    <label class="form-label">选择角色</label>
+                    <select class="form-control" id="role-selector">
+                        <option value="">-- 选择角色 --</option>
+                        <!-- 动态加载角色选项 -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">权限设置</label>
+                    <div style="background: rgba(30, 30, 30, 0.5); border-radius: 8px; padding: 15px; border: 1px solid var(--dark-border);">
+                        <div style="margin-bottom: 15px;">
+                            <h4 style="margin-bottom: 10px; color: white;">患者数据权限</h4>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="view_own_department" class="permission-checkbox"> 查看本科室患者数据
+                                </label>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="edit_patient_basic" class="permission-checkbox"> 编辑患者基本信息
+                                </label>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="add_medical_record" class="permission-checkbox"> 添加医疗记录
+                                </label>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="delete_medical_record" class="permission-checkbox"> 删除医疗记录
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <h4 style="margin-bottom: 10px; color: white;">跨科室权限</h4>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="request_cross_department" class="permission-checkbox"> 申请跨科室数据访问
+                                </label>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="view_cross_department" class="permission-checkbox"> 查看跨科室数据（只读）
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 style="margin-bottom: 10px; color: white;">系统权限</h4>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="manage_own_doctors" class="permission-checkbox"> 管理本科室医生
+                                </label>
+                                <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                    <input type="checkbox" name="view_system_logs" class="permission-checkbox"> 查看系统日志
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-success" id="save-permissions">
+                    <i class="fas fa-save"></i> 保存权限配置
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 角色模态框 -->
+<div id="role-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="role-modal-title">添加角色</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="role-form">
+                <input type="hidden" id="role-id">
+                <div class="form-group">
+                    <label class="form-label">角色名称</label>
+                    <input type="text" class="form-control" id="role-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色描述</label>
+                    <textarea class="form-control form-textarea" id="role-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">状态</label>
+                    <select class="form-control" id="role-status" required>
+                        <option value="active">激活</option>
+                        <option value="inactive">未激活</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="cancel-role">取消</button>
+            <button type="button" class="btn btn-primary" id="save-role">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除对话框 -->
+<div id="confirm-role-delete" class="confirm-dialog">
+    <h3>确认删除角色</h3>
+    <p id="confirm-role-message">您确定要删除此角色吗？此操作不可逆。</p>
+    <div class="confirm-buttons">
+        <button class="btn btn-outline" id="cancel-role-delete">取消</button>
+        <button class="btn btn-danger" id="confirm-role-delete">确认删除</button>
+    </div>
+</div>
+        <div id="permissions-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    权限配置
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密 (ABE技术)
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">权限配置</h2>
+                </div>
+                <div class="card-body">
+                    <div class="admin-form">
+                        <div class="form-group">
+                            <label class="form-label">选择角色</label>
+                            <select class="form-control">
+                                <option value="">-- 选择角色 --</option>
+                                <option value="doctor">医生</option>
+                                <option value="senior_doctor">高级医生</option>
+                                <option value="department_head">科室主任</option>
+                                <option value="admin">系统管理员</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">权限设置</label>
+                            <div style="background: rgba(30, 30, 30, 0.5); border-radius: 8px; padding: 15px; border: 1px solid var(--dark-border);">
+                                <div style="margin-bottom: 15px;">
+                                    <h4 style="margin-bottom: 10px; color: white;">患者数据权限</h4>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox" checked> 查看本科室患者数据
+                                        </label>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 编辑患者基本信息
+                                        </label>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 添加医疗记录
+                                        </label>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 删除医疗记录
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 15px;">
+                                    <h4 style="margin-bottom: 10px; color: white;">跨科室权限</h4>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 申请跨科室数据访问
+                                        </label>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 查看跨科室数据（只读）
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h4 style="margin-bottom: 10px; color: white;">系统权限</h4>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 管理本科室医生
+                                        </label>
+                                        <label style="display: block; margin-bottom: 8px; color: var(--dark-text);">
+                                            <input type="checkbox"> 查看系统日志
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-success">
+                            <i class="fas fa-save"></i> 保存权限配置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 审计日志页面 -->
+        <div id="audit-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-history"></i>
+                    审计日志
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">系统审计日志</h2>
+                    <div>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-download"></i> 导出日志
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="audit-log">
+                        <div class="log-item">
+                            <div class="log-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">
+                                    <span class="log-highlight">张明医生</span> 添加了新患者 <span class="log-highlight">李大明 (ID: PT202305001)</span>
+                                </div>
+                                <div class="log-meta">
+                                    2023-11-16 09:45:28 | IP: 192.168.1.102 | 操作ID: ACT202311160945281
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon">
+                                <i class="fas fa-file-medical"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">
+                                    <span class="log-highlight">王雪梅医生</span> 更新了患者 <span class="log-highlight">张建国 (ID: PT202308023)</span> 的医疗记录
+                                </div>
+                                <div class="log-meta">
+                                    2023-11-16 08:30:15 | IP: 192.168.1.205 | 操作ID: ACT202311160830152
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">
+                                    <span class="log-highlight">李建国医生</span> 申请了 <span class="log-highlight">心血管内科</span> 的数据访问权限
+                                </div>
+                                <div class="log-meta">
+                                    2023-11-15 16:20:43 | IP: 192.168.1.178 | 操作ID: ACT202311151620433
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">
+                                    <span class="log-success">权限更新</span> 系统管理员更新了 <span class="log-highlight">高级医生</span> 角色的权限设置
+                                </div>
+                                <div class="log-meta">
+                                    2023-11-15 14:15:30 | IP: 192.168.1.001 | 操作ID: ACT202311151415304
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">
+                                    <span class="log-danger">登录失败</span> 尝试使用无效凭证访问系统 (用户名: admin_test)
+                                </div>
+                                <div class="log-meta">
+                                    2023-11-15 11:05:22 | IP: 192.168.2.155 | 操作ID: ACT202311151105225
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 系统监控页面 -->
+        <div id="monitoring-section" class="page-section">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-chart-line"></i>
+                    系统监控
+                </h1>
+                <div class="encryption-badge">
+                    <i class="fas fa-lock"></i>
+                    数据端到端加密 (ABE技术)
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">系统监控</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="monitoringChart"></canvas>
+                    </div>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-blue">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">24.5 GB</div>
+                                <div class="stat-title">医疗数据存储</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-green">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">98.7%</div>
+                                <div class="stat-title">加密数据比例</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-orange">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">86</div>
+                                <div class="stat-title">今日活跃用户</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-purple">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">142</div>
+                                <div class="stat-title">今日数据访问</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <!-- 医生模态框 -->
+    <div id="doctor-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="doctor-modal-title">添加医生</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="doctor-form">
+                    <input type="hidden" id="doctor-id">
+                    <div class="form-group">
+                        <label class="form-label">姓名</label>
+                        <input type="text" class="form-control" id="doctor-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">科室</label>
+                        <select class="form-control" id="doctor-department" required>
+                            <option value="">请选择科室</option>
+                            <option value="心血管内科">心血管内科</option>
+                            <option value="神经内科">神经内科</option>
+                            <option value="呼吸内科">呼吸内科</option>
+                            <option value="内分泌科">内分泌科</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">职称</label>
+                        <select class="form-control" id="doctor-title" required>
+                            <option value="">请选择职称</option>
+                            <option value="主任医师">主任医师</option>
+                            <option value="副主任医师">副主任医师</option>
+                            <option value="主治医师">主治医师</option>
+                            <option value="住院医师">住院医师</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">状态</label>
+                        <select class="form-control" id="doctor-status" required>
+                            <option value="active">激活</option>
+                            <option value="inactive">未激活</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="cancel-doctor">取消</button>
+                <button type="button" class="btn btn-primary" id="save-doctor">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 科室模态框 -->
+    <div id="department-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="department-modal-title">添加科室</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="department-form">
+                    <input type="hidden" id="department-id">
+                    <div class="form-group">
+                        <label class="form-label">科室名称</label>
+                        <input type="text" class="form-control" id="department-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">负责人</label>
+                        <select class="form-control" id="department-head" required>
+                            <option value="">请选择负责人</option>
+                            <!-- 动态加载医生列表 -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">状态</label>
+                        <select class="form-control" id="department-status" required>
+                            <option value="active">启用</option>
+                            <option value="inactive">停用</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="cancel-department">取消</button>
+                <button type="button" class="btn btn-primary" id="save-department">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认删除对话框 -->
+    <div id="confirm-dialog" class="confirm-dialog">
+        <h3>确认删除</h3>
+        <p id="confirm-message">您确定要删除此项吗？此操作不可逆。</p>
+        <div class="confirm-buttons">
+            <button class="btn btn-outline" id="cancel-delete">取消</button>
+            <button class="btn btn-danger" id="confirm-delete">确认删除</button>
+        </div>
+    </div>
+
+    </main>
+    
+    <script>
+        let rolesData = [
+    { 
+        id: 'ROLE001', 
+        name: '医生', 
+        description: '基础医生角色，可以查看和管理本科室患者数据', 
+        userCount: 65, 
+        status: 'active', 
+        createdAt: '2023-01-15',
+        permissions: {
+            view_own_department: true,
+            edit_patient_basic: true,
+            add_medical_record: true,
+            delete_medical_record: false,
+            request_cross_department: true,
+            view_cross_department: false,
+            manage_own_doctors: false,
+            view_system_logs: false
+        }
+    },
+    { 
+        id: 'ROLE002', 
+        name: '高级医生', 
+        description: '高级医生角色，拥有更多权限', 
+        userCount: 18, 
+        status: 'active', 
+        createdAt: '2023-02-20',
+        permissions: {
+            view_own_department: true,
+            edit_patient_basic: true,
+            add_medical_record: true,
+            delete_medical_record: true,
+            request_cross_department: true,
+            view_cross_department: true,
+            manage_own_doctors: true,
+            view_system_logs: false
+        }
+    },
+    { 
+        id: 'ROLE003', 
+        name: '科室主任', 
+        description: '科室主任角色，可以管理本科室医生', 
+        userCount: 8, 
+        status: 'active', 
+        createdAt: '2023-03-10',
+        permissions: {
+            view_own_department: true,
+            edit_patient_basic: true,
+            add_medical_record: true,
+            delete_medical_record: true,
+            request_cross_department: true,
+            view_cross_department: true,
+            manage_own_doctors: true,
+            view_system_logs: true
+        }
+    },
+    { 
+        id: 'ROLE004', 
+        name: '系统管理员', 
+        description: '系统管理员角色，拥有全部权限', 
+        userCount: 3, 
+        status: 'active', 
+        createdAt: '2023-01-05',
+        permissions: {
+            view_own_department: true,
+            edit_patient_basic: true,
+            add_medical_record: true,
+            delete_medical_record: true,
+            request_cross_department: true,
+            view_cross_department: true,
+            manage_own_doctors: true,
+            view_system_logs: true
+        }
+    }
+];
+
+let currentRoleId = null;
+
+// 初始化权限配置页面
+function initPermissionsPage() {
+    renderRolesTable();
+    populateRoleSelector();
+    
+    // 绑定事件
+    document.getElementById('add-role-btn').addEventListener('click', openRoleModal);
+    document.getElementById('save-role').addEventListener('click', saveRole);
+    document.getElementById('cancel-role').addEventListener('click', closeRoleModal);
+    document.getElementById('search-roles').addEventListener('click', filterRoles);
+    document.getElementById('role-selector').addEventListener('change', loadRolePermissions);
+    document.getElementById('save-permissions').addEventListener('click', savePermissions);
+    
+    // 确认删除事件
+    document.getElementById('confirm-role-delete').addEventListener('click', confirmRoleDelete);
+    document.getElementById('cancel-role-delete').addEventListener('click', function() {
+        document.getElementById('confirm-role-delete').style.display = 'none';
+    });
+    
+    // 模态框关闭事件
+    document.querySelectorAll('#role-modal .close').forEach(function(closeBtn) {
+        closeBtn.addEventListener('click', closeRoleModal);
+    });
+}
+
+// 渲染角色表格
+function renderRolesTable(data = rolesData) {
+    const tbody = document.querySelector('#roles-table tbody');
+    tbody.innerHTML = '';
+    
+    data.forEach(role => {
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+            <td>${role.id}</td>
+            <td>${role.name}</td>
+            <td>${role.description}</td>
+            <td>${role.userCount}</td>
+            <td><span class="status-badge ${role.status === 'active' ? 'status-active' : 'status-inactive'}">${role.status === 'active' ? '激活' : '未激活'}</span></td>
+            <td>${role.createdAt}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-outline btn-sm edit-role" data-id="${role.id}">
+                        <i class="fas fa-edit"></i> 编辑
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-role" data-id="${role.id}">
+                        <i class="fas fa-trash"></i> 删除
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+    });
+    
+    // 绑定编辑和删除事件
+    document.querySelectorAll('.edit-role').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            editRole(id);
+        });
+    });
+    
+    document.querySelectorAll('.delete-role').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            showRoleDeleteConfirm(id);
+        });
+    });
+}
+
+// 填充角色选择器
+function populateRoleSelector() {
+    const selector = document.getElementById('role-selector');
+    selector.innerHTML = '<option value="">-- 选择角色 --</option>';
+    
+    rolesData.forEach(role => {
+        if (role.status === 'active') {
+            const option = document.createElement('option');
+            option.value = role.id;
+            option.textContent = role.name;
+            selector.appendChild(option);
+        }
+    });
+}
+
+// 打开角色模态框
+function openRoleModal() {
+    document.getElementById('role-modal-title').textContent = '添加角色';
+    document.getElementById('role-form').reset();
+    document.getElementById('role-id').value = '';
+    document.getElementById('role-modal').style.display = 'block';
+}
+
+// 关闭角色模态框
+function closeRoleModal() {
+    document.getElementById('role-modal').style.display = 'none';
+}
+
+// 编辑角色
+function editRole(id) {
+    const role = rolesData.find(r => r.id === id);
+    if (role) {
+        document.getElementById('role-modal-title').textContent = '编辑角色';
+        document.getElementById('role-id').value = role.id;
+        document.getElementById('role-name').value = role.name;
+        document.getElementById('role-description').value = role.description;
+        document.getElementById('role-status').value = role.status;
+        
+        document.getElementById('role-modal').style.display = 'block';
+    }
+}
+
+// 保存角色
+function saveRole() {
+    const id = document.getElementById('role-id').value;
+    const name = document.getElementById('role-name').value;
+    const description = document.getElementById('role-description').value;
+    const status = document.getElementById('role-status').value;
+    
+    if (!name) {
+        alert('请填写角色名称');
+        return;
+    }
+    
+    if (id) {
+        // 更新现有角色
+        const index = rolesData.findIndex(r => r.id === id);
+        if (index !== -1) {
+            rolesData[index] = {
+                ...rolesData[index],
+                name,
+                description,
+                status
+            };
+        }
+    } else {
+        // 添加新角色
+        const newId = 'ROLE' + (rolesData.length + 1).toString().padStart(3, '0');
+        const currentDate = new Date().toISOString().split('T')[0];
+        
+        rolesData.push({
+            id: newId,
+            name,
+            description,
+            userCount: 0,
+            status,
+            createdAt: currentDate,
+            permissions: {
+                view_own_department: false,
+                edit_patient_basic: false,
+                add_medical_record: false,
+                delete_medical_record: false,
+                request_cross_department: false,
+                view_cross_department: false,
+                manage_own_doctors: false,
+                view_system_logs: false
+            }
+        });
+    }
+    
+    renderRolesTable();
+    populateRoleSelector();
+    closeRoleModal();
+}
+
+// 显示角色删除确认
+function showRoleDeleteConfirm(id) {
+    const role = rolesData.find(r => r.id === id);
+    if (role) {
+        currentRoleId = id;
+        document.getElementById('confirm-role-message').textContent = 
+            `您确定要删除角色"${role.name}"吗？此操作不可逆。`;
+        document.getElementById('confirm-role-delete').style.display = 'block';
+    }
+}
+
+// 确认删除角色
+function confirmRoleDelete() {
+    if (currentRoleId) {
+        rolesData = rolesData.filter(r => r.id !== currentRoleId);
+        renderRolesTable();
+        populateRoleSelector();
+        currentRoleId = null;
+    }
+    
+    document.getElementById('confirm-role-delete').style.display = 'none';
+}
+
+// 过滤角色
+function filterRoles() {
+    const searchText = document.getElementById('role-search').value.toLowerCase();
+    const status = document.getElementById('role-status-filter').value;
+    
+    const filtered = rolesData.filter(role => {
+        const matchesSearch = role.name.toLowerCase().includes(searchText) || 
+                             role.id.toLowerCase().includes(searchText) ||
+                             role.description.toLowerCase().includes(searchText);
+        const matchesStatus = status ? role.status === status : true;
+        
+        return matchesSearch && matchesStatus;
+    });
+    
+    renderRolesTable(filtered);
+}
+
+// 加载角色权限
+function loadRolePermissions() {
+    const roleId = document.getElementById('role-selector').value;
+    if (!roleId) {
+        // 清空所有复选框
+        document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        return;
+    }
+    
+    const role = rolesData.find(r => r.id === roleId);
+    if (role) {
+        // 设置权限复选框
+        for (const [permission, value] of Object.entries(role.permissions)) {
+            const checkbox = document.querySelector(`.permission-checkbox[name="${permission}"]`);
+            if (checkbox) {
+                checkbox.checked = value;
+            }
+        }
+    }
+}
+
+// 保存权限配置
+function savePermissions() {
+    const roleId = document.getElementById('role-selector').value;
+    if (!roleId) {
+        alert('请先选择角色');
+        return;
+    }
+    
+    const roleIndex = rolesData.findIndex(r => r.id === roleId);
+    if (roleIndex === -1) {
+        alert('未找到所选角色');
+        return;
+    }
+    
+    // 收集权限设置
+    const permissions = {};
+    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+        permissions[checkbox.name] = checkbox.checked;
+    });
+    
+    // 更新角色权限
+    rolesData[roleIndex].permissions = permissions;
+    
+    alert('权限配置已保存');
+}
+
+// 在DOM加载完成后初始化权限页面
+document.addEventListener('DOMContentLoaded', function() {
+    // 其他初始化代码...
+    
+    // 初始化权限配置页面
+    initPermissionsPage();
+});
+                // 数据存储
+        let doctorsData = [
+            { id: 'DOC2023001', name: '王雪梅', department: '心血管内科', title: '主任医师', status: 'active', lastLogin: '2023-11-16 09:15' },
+            { id: 'DOC2023005', name: '李建国', department: '神经内科', title: '副主任医师', status: 'active', lastLogin: '2023-11-15 14:30' },
+            { id: 'DOC2023012', name: '张明', department: '呼吸内科', title: '主治医师', status: 'active', lastLogin: '2023-11-16 08:45' },
+            { id: 'DOC2023022', name: '陈小云', department: '内分泌科', title: '住院医师', status: 'inactive', lastLogin: '--' }
+        ];
+        
+        let departmentsData = [
+            { id: 'DEPT001', name: '心血管内科', head: '王雪梅', doctorCount: 12, patientCount: 342, status: 'active' },
+            { id: 'DEPT002', name: '神经内科', head: '李建国', doctorCount: 8, patientCount: 215, status: 'active' },
+            { id: 'DEPT003', name: '呼吸内科', head: '张明', doctorCount: 10, patientCount: 287, status: 'active' },
+            { id: 'DEPT004', name: '内分泌科', head: '陈小云', doctorCount: 6, patientCount: 154, status: 'inactive' }
+        ];
+        
+        // 当前操作项
+        let currentDoctorId = null;
+        let currentDepartmentId = null;
+        
+        // DOM 加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化医生表格
+            renderDoctorsTable();
+            
+            // 初始化科室表格
+            renderDepartmentsTable();
+            
+            // 填充科室负责人下拉框
+            populateDepartmentHeads();
+            
+            // 医生管理事件绑定
+            document.getElementById('add-doctor-btn').addEventListener('click', function() {
+                openDoctorModal();
+            });
+            
+            document.getElementById('save-doctor').addEventListener('click', function() {
+                saveDoctor();
+            });
+            
+            document.getElementById('cancel-doctor').addEventListener('click', function() {
+                closeDoctorModal();
+            });
+            
+            // 科室管理事件绑定
+            document.getElementById('add-department-btn').addEventListener('click', function() {
+                openDepartmentModal();
+            });
+            
+            document.getElementById('save-department').addEventListener('click', function() {
+                saveDepartment();
+            });
+            
+            document.getElementById('cancel-department').addEventListener('click', function() {
+                closeDepartmentModal();
+            });
+            
+            // 搜索功能
+            document.getElementById('search-doctors').addEventListener('click', function() {
+                filterDoctors();
+            });
+            
+            document.getElementById('search-departments').addEventListener('click', function() {
+                filterDepartments();
+            });
+            
+            // 模态框关闭事件
+            document.querySelectorAll('.close').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    document.querySelectorAll('.modal').forEach(function(modal) {
+                        modal.style.display = 'none';
+                    });
+                });
+            });
+            
+            // 确认删除事件
+            document.getElementById('confirm-delete').addEventListener('click', function() {
+                confirmDelete();
+            });
+            
+            document.getElementById('cancel-delete').addEventListener('click', function() {
+                document.getElementById('confirm-dialog').style.display = 'none';
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(event) {
+                document.querySelectorAll('.modal').forEach(function(modal) {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // 渲染医生表格
+        function renderDoctorsTable(data = doctorsData) {
+            const tbody = document.querySelector('#doctors-table tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach(doctor => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td>${doctor.id}</td>
+                    <td>${doctor.name}</td>
+                    <td>${doctor.department}</td>
+                    <td>${doctor.title}</td>
+                    <td><span class="status-badge ${doctor.status === 'active' ? 'status-active' : 'status-inactive'}">${doctor.status === 'active' ? '激活' : '未激活'}</span></td>
+                    <td>${doctor.lastLogin}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-outline btn-sm edit-doctor" data-id="${doctor.id}">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-outline btn-sm" data-id="${doctor.id}">
+                                <i class="fas fa-key"></i> 权限
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-doctor" data-id="${doctor.id}">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+            
+            // 绑定编辑和删除事件
+            document.querySelectorAll('.edit-doctor').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    editDoctor(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-doctor').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    showDeleteConfirm('doctor', id);
+                });
+            });
+        }
+        
+        // 渲染科室表格
+        function renderDepartmentsTable(data = departmentsData) {
+            const tbody = document.querySelector('#departments-table tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach(dept => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td>${dept.id}</td>
+                    <td>${dept.name}</td>
+                    <td>${dept.head}</td>
+                    <td>${dept.doctorCount}</td>
+                    <td>${dept.patientCount}</td>
+                    <td><span class="status-badge ${dept.status === 'active' ? 'status-active' : 'status-inactive'}">${dept.status === 'active' ? '启用' : '停用'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-outline btn-sm edit-department" data-id="${dept.id}">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-department" data-id="${dept.id}">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+            
+            // 绑定编辑和删除事件
+            document.querySelectorAll('.edit-department').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    editDepartment(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-department').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    showDeleteConfirm('department', id);
+                });
+            });
+        }
+        
+        // 打开医生模态框
+        function openDoctorModal() {
+            document.getElementById('doctor-modal-title').textContent = '添加医生';
+            document.getElementById('doctor-form').reset();
+            document.getElementById('doctor-id').value = '';
+            document.getElementById('doctor-modal').style.display = 'block';
+        }
+        
+        // 打开科室模态框
+        function openDepartmentModal() {
+            document.getElementById('department-modal-title').textContent = '添加科室';
+            document.getElementById('department-form').reset();
+            document.getElementById('department-id').value = '';
+            document.getElementById('department-modal').style.display = 'block';
+        }
+        
+        // 关闭医生模态框
+        function closeDoctorModal() {
+            document.getElementById('doctor-modal').style.display = 'none';
+        }
+        
+        // 关闭科室模态框
+        function closeDepartmentModal() {
+            document.getElementById('department-modal').style.display = 'none';
+        }
+        
+        // 编辑医生
+        function editDoctor(id) {
+            const doctor = doctorsData.find(d => d.id === id);
+            if (doctor) {
+                document.getElementById('doctor-modal-title').textContent = '编辑医生';
+                document.getElementById('doctor-id').value = doctor.id;
+                document.getElementById('doctor-name').value = doctor.name;
+                document.getElementById('doctor-department').value = doctor.department;
+                document.getElementById('doctor-title').value = doctor.title;
+                document.getElementById('doctor-status').value = doctor.status;
+                
+                document.getElementById('doctor-modal').style.display = 'block';
+            }
+        }
+        
+        // 编辑科室
+        function editDepartment(id) {
+            const department = departmentsData.find(d => d.id === id);
+            if (department) {
+                document.getElementById('department-modal-title').textContent = '编辑科室';
+                document.getElementById('department-id').value = department.id;
+                document.getElementById('department-name').value = department.name;
+                document.getElementById('department-head').value = department.head;
+                document.getElementById('department-status').value = department.status;
+                
+                document.getElementById('department-modal').style.display = 'block';
+            }
+        }
+        
+        // 保存医生
+        function saveDoctor() {
+            const id = document.getElementById('doctor-id').value;
+            const name = document.getElementById('doctor-name').value;
+            const department = document.getElementById('doctor-department').value;
+            const title = document.getElementById('doctor-title').value;
+            const status = document.getElementById('doctor-status').value;
+            
+            if (!name || !department || !title) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            if (id) {
+                // 更新现有医生
+                const index = doctorsData.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    doctorsData[index] = {
+                        ...doctorsData[index],
+                        name,
+                        department,
+                        title,
+                        status
+                    };
+                }
+            } else {
+                // 添加新医生
+                const newId = 'DOC' + (new Date().getFullYear()) + (doctorsData.length + 1).toString().padStart(3, '0');
+                doctorsData.push({
+                    id: newId,
+                    name,
+                    department,
+                    title,
+                    status,
+                    lastLogin: '--'
+                });
+            }
+            
+            renderDoctorsTable();
+            closeDoctorModal();
+        }
+        
+        // 保存科室
+        function saveDepartment() {
+            const id = document.getElementById('department-id').value;
+            const name = document.getElementById('department-name').value;
+            const head = document.getElementById('department-head').value;
+            const status = document.getElementById('department-status').value;
+            
+            if (!name || !head) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            if (id) {
+                // 更新现有科室
+                const index = departmentsData.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    departmentsData[index] = {
+                        ...departmentsData[index],
+                        name,
+                        head,
+                        status
+                    };
+                }
+            } else {
+                // 添加新科室
+                const newId = 'DEPT' + (departmentsData.length + 1).toString().padStart(3, '0');
+                departmentsData.push({
+                    id: newId,
+                    name,
+                    head,
+                    doctorCount: 0,
+                    patientCount: 0,
+                    status
+                });
+            }
+            
+            renderDepartmentsTable();
+            closeDepartmentModal();
+        }
+        
+        // 显示删除确认对话框
+        function showDeleteConfirm(type, id) {
+            currentDoctorId = type === 'doctor' ? id : null;
+            currentDepartmentId = type === 'department' ? id : null;
+            
+            let message = '';
+            if (type === 'doctor') {
+                const doctor = doctorsData.find(d => d.id === id);
+                message = `您确定要删除医生"${doctor.name}"吗？此操作不可逆。`;
+            } else {
+                const department = departmentsData.find(d => d.id === id);
+                message = `您确定要删除科室"${department.name}"吗？此操作不可逆。`;
+            }
+            
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-dialog').style.display = 'block';
+        }
+        
+        // 确认删除
+        function confirmDelete() {
+            if (currentDoctorId) {
+                doctorsData = doctorsData.filter(d => d.id !== currentDoctorId);
+                renderDoctorsTable();
+                currentDoctorId = null;
+            } else if (currentDepartmentId) {
+                departmentsData = departmentsData.filter(d => d.id !== currentDepartmentId);
+                renderDepartmentsTable();
+                currentDepartmentId = null;
+            }
+            
+            document.getElementById('confirm-dialog').style.display = 'none';
+        }
+        
+        // 填充科室负责人下拉框
+        function populateDepartmentHeads() {
+            const select = document.getElementById('department-head');
+            select.innerHTML = '<option value="">请选择负责人</option>';
+            
+            doctorsData.forEach(doctor => {
+                if (doctor.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = doctor.name;
+                    option.textContent = doctor.name;
+                    select.appendChild(option);
+                }
+            });
+        }
+        
+        // 过滤医生
+        function filterDoctors() {
+            const searchText = document.getElementById('doctor-search').value.toLowerCase();
+            const department = document.getElementById('department-filter').value;
+            const status = document.getElementById('status-filter').value;
+            
+            const filtered = doctorsData.filter(doctor => {
+                const matchesSearch = doctor.name.toLowerCase().includes(searchText) || doctor.id.toLowerCase().includes(searchText);
+                const matchesDepartment = department ? doctor.department === department : true;
+                const matchesStatus = status ? doctor.status === status : true;
+                
+                return matchesSearch && matchesDepartment && matchesStatus;
+            });
+            
+            renderDoctorsTable(filtered);
+        }
+        
+        // 过滤科室
+        function filterDepartments() {
+            const searchText = document.getElementById('department-search').value.toLowerCase();
+            const status = document.getElementById('dept-status-filter').value;
+            
+            const filtered = departmentsData.filter(department => {
+                const matchesSearch = department.name.toLowerCase().includes(searchText) || department.id.toLowerCase().includes(searchText);
+                const matchesStatus = status ? department.status === status : true;
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            renderDepartmentsTable(filtered);
+        }
+        // 图表初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 系统监控图表
+            const ctx = document.getElementById('systemChart').getContext('2d');
+            const systemChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [{
+                        label: '活跃用户数',
+                        data: [65, 72, 80, 76, 85, 55, 60],
+                        backgroundColor: 'rgba(41, 98, 255, 0.1)',
+                        borderColor: 'rgba(41, 98, 255, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '数据访问量',
+                        data: [120, 135, 142, 138, 156, 95, 110],
+                        backgroundColor: 'rgba(0, 200, 83, 0.1)',
+                        borderColor: 'rgba(0, 200, 83, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#bbdefb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#bbdefb'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#bbdefb'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '最近7天系统活动统计',
+                            font: {
+                                size: 16
+                            },
+                            color: 'white'
+                        }
+                    }
+                }
+            });
+            
+            // 系统监控图表
+            const monitoringCtx = document.getElementById('monitoringChart').getContext('2d');
+            const monitoringChart = new Chart(monitoringCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU使用率', '内存使用率', '存储使用率', '网络流量', '加密操作'],
+                    datasets: [{
+                        label: '系统资源使用率 (%)',
+                        data: [45, 62, 78, 52, 35],
+                        backgroundColor: [
+                            'rgba(41, 98, 255, 0.7)',
+                            'rgba(0, 200, 83, 0.7)',
+                            'rgba(255, 171, 0, 0.7)',
+                            'rgba(156, 39, 176, 0.7)',
+                            'rgba(233, 30, 99, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(41, 98, 255, 1)',
+                            'rgba(0, 200, 83, 1)',
+                            'rgba(255, 171, 0, 1)',
+                            'rgba(156, 39, 176, 1)',
+                            'rgba(233, 30, 99, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#bbdefb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#bbdefb'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '系统资源使用情况',
+                            font: {
+                                size: 16
+                            },
+                            color: 'white'
+                        }
+                    }
+                }
+            });
+            
+            // 移动端菜单切换
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+            
+            // 侧边栏菜单点击事件
+            const navItems = document.querySelectorAll('.nav-item');
+            const pageSections = document.querySelectorAll('.page-section');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 移除所有菜单项的active类
+                    navItems.forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // 添加当前菜单项的active类
+                    this.classList.add('active');
+                    
+                    // 获取目标页面ID
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // 隐藏所有页面
+                    pageSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // 显示目标页面
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+        });
+                // 图表初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动端菜单切换
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+            
+            // 侧边栏菜单点击事件
+            const navItems = document.querySelectorAll('.nav-item');
+            const pageSections = document.querySelectorAll('.page-section');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 移除所有菜单项的active类
+                    navItems.forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // 添加当前菜单项的active类
+                    this.classList.add('active');
+                    
+                    // 获取目标页面ID
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // 隐藏所有页面
+                    pageSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // 显示目标页面
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+            
+            // 双因素认证方法选择
+            const authMethods = document.querySelectorAll('.auth-method');
+            authMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    authMethods.forEach(m => m.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
